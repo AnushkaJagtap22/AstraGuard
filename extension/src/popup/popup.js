@@ -323,21 +323,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       if (typeof chrome !== "undefined" && chrome.tabs && currentTabInfo.tabId) {
-        const res = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
-        if (res) {
-          extractedData = res;
-          currentTabInfo.selectedText = res.selectedText || "";
-          currentTabInfo.bodyText = res.bodyText || "";
-          currentTabInfo.metaDescription = res.metaDescription || "";
-          currentTabInfo.links = res.links || [];
-          currentTabInfo.signals = res.signals || [];
+        try {
+          const res = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
+          if (res) extractedData = res;
+        } catch (msgErr) {
+          // If content script is not yet injected into this tab, inject on-the-fly using scripting API
+          if (typeof chrome.scripting !== "undefined" && chrome.scripting.executeScript && currentTabInfo.url && currentTabInfo.url.startsWith("http")) {
+            console.log("[EXTENSION] Dynamically injecting content script into tab:", currentTabInfo.tabId);
+            try {
+              await chrome.scripting.executeScript({
+                target: { tabId: currentTabInfo.tabId },
+                files: ["src/content/content-script.js"]
+              });
+              const retryRes = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
+              if (retryRes) extractedData = retryRes;
+            } catch (injectErr) {
+              console.warn("[EXTENSION] On-the-fly script injection skipped:", injectErr.message);
+            }
+          }
+        }
+
+        if (extractedData) {
+          currentTabInfo.selectedText = extractedData.selectedText || "";
+          currentTabInfo.bodyText = extractedData.bodyText || "";
+          currentTabInfo.metaDescription = extractedData.metaDescription || "";
+          currentTabInfo.links = extractedData.links || [];
+          currentTabInfo.signals = extractedData.signals || [];
           console.log("[EXTENSION] Visible text length:", currentTabInfo.bodyText.length);
           console.log("[EXTENSION] Links detected:", currentTabInfo.links.length);
           console.log("[EXTENSION] Signals extracted by content script:", currentTabInfo.signals.length);
         }
       }
     } catch (err) {
-      console.warn("[EXTENSION] Content script communication fallback:", err);
+      console.warn("[EXTENSION] Content script communication fallback handled cleanly:", err);
     }
 
     let backendResponse = null;
