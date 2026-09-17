@@ -1,0 +1,10 @@
+{
+  "name": "astraguard-platform",
+  "version": "1.0.0",
+  "description": "अस्त्रGuard — AI Digital Investigation & Safety Platform",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:extension": "echo Extension ready to load unpacked in chrome://extensions from ./extension folder"
+  }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B132B"/>
+      <stop offset="100%" stop-color="#111D38"/>
+    </linearGradient>
+    <linearGradient id="strokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="100%" stop-color="#0066FF"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 6 L90 20 V46 C90 70 50 92 50 92 C50 92 10 70 10 46 V20 L50 6 Z" fill="url(#shieldGrad)" stroke="url(#strokeGrad)" stroke-width="4.5" stroke-linejoin="round"/>
+  <path d="M50 22 L75 68 H64 L50 40 L36 68 H25 L50 22 Z" fill="#4DA3FF"/>
+  <polygon points="50,42 61,53 50,64 39,53" fill="#00F0FF"/>
+  <rect x="30" y="51.5" width="40" height="3" fill="#00F0FF" rx="1.5"/>
+</svg>

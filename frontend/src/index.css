@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #F5F1E8;
+  --bg-secondary: #EDE8DD;
+  --bg-tertiary: #E4DED1;
+
+  --surface: #FFFFFF;
+  --surface-hover: #FAF8F4;
+  --surface-selected: #FFFDFC;
+
+  --charcoal: #1C1C1A;
+  --graphite: #292824;
+  --charcoal-soft: #45433E;
+
+  --text-primary: #1C1C1A;
+  --text-secondary: #5E5B55;
+  --text-muted: #858078;
+  --text-disabled: #AAA59B;
+  --text-inverse: #FFFFFF;
+
+  --brand-primary: #C74634;
+  --brand-dark: #9F2F24;
+  --brand-light: #F5D8D2;
+  --brand-soft: #FBEDEA;
+
+  --danger: #C74634;
+  --danger-dark: #9F2F24;
+  --danger-bg: #FBEDEA;
+
+  --warning: #B7791F;
+  --warning-bg: #FBF2DD;
+
+  --success: #39704D;
+  --success-bg: #EAF3ED;
+
+  --info: #46627A;
+  --info-bg: #EDF2F5;
+
+  --border-subtle: #E1DCD2;
+  --border-default: #D4CEC2;
+  --border-strong: #B9B1A3;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #F5F1E8 !important;
+  color: #1C1C1A !important;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F1E8;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4CEC2;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B9B1A3;
+}
+
+.titanium-glass {
+  background: #FFFFFF;
+  border: 1px solid #D4CEC2;
+  box-shadow: 0 2px 8px rgba(28, 28, 26, 0.05);
+}

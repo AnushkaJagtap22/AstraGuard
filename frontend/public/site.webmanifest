@@ -1,0 +1,21 @@
+{
+  "name": "अस्त्रGuard — AI Digital Safety Layer",
+  "short_name": "अस्त्रGuard",
+  "description": "Real-time AI-powered digital safety and investigation layer.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0B0D10",
+  "theme_color": "#00F0FF",
+  "display": "standalone"
+}
