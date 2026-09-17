@@ -25,21 +25,31 @@ export async function checkPageSafety(url, title, contentPreview) {
 }
 
 export async function investigatePage(url, title, selectedText, pageContent) {
-  const res = await fetch(`${BACKEND_URL}/api/extension/investigate-page`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, title, selectedText, pageContent })
-  });
-  if (!res.ok) throw new Error("Investigation service error");
-  return await res.json();
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/extension/investigate-page`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, title, selectedText, pageContent })
+    });
+    if (!res.ok) throw new Error("Investigation service error");
+    return await res.json();
+  } catch (err) {
+    console.warn("Investigate page fallback:", err);
+    return { status: "ERROR", error: err.message };
+  }
 }
 
 export async function investigateText(selectedText, pageUrl, pageTitle) {
-  const res = await fetch(`${BACKEND_URL}/api/extension/investigate-text`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ selectedText, pageUrl, pageTitle })
-  });
-  if (!res.ok) throw new Error("Text investigation service error");
-  return await res.json();
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/extension/investigate-text`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ selectedText, pageUrl, pageTitle })
+    });
+    if (!res.ok) throw new Error("Text investigation service error");
+    return await res.json();
+  } catch (err) {
+    console.warn("Investigate text fallback:", err);
+    return { status: "ERROR", error: err.message };
+  }
 }

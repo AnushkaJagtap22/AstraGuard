@@ -199,6 +199,10 @@ function scanPageSafety() {
       signalCount: signals.length,
       isHighRisk: isHighRisk,
       signals: signals
+    }, () => {
+      if (chrome.runtime.lastError) {
+        // Suppress lastError silently when service worker is waking up or not receiving
+      }
     });
   } catch (_) {}
 

@@ -209,7 +209,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function queryActiveTabContext() {
     try {
       if (typeof chrome !== "undefined" && chrome.tabs) {
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        let tabs = [];
+        try {
+          tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        } catch (_) {}
+
+        if (!tabs || tabs.length === 0) {
+          try {
+            tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+          } catch (_) {}
+        }
+
         if (tabs && tabs[0]) {
           currentTabInfo.tabId = tabs[0].id;
           currentTabInfo.url = tabs[0].url || "";
@@ -319,43 +329,47 @@ document.addEventListener("DOMContentLoaded", async () => {
       scanStatusIndicator.className = "text-amber font-bold text-[10px]";
     }
 
+    const isInternalPage = !currentTabInfo.url || currentTabInfo.url.startsWith("chrome://") || currentTabInfo.url.startsWith("edge://") || currentTabInfo.url.startsWith("about:") || currentTabInfo.url.startsWith("chrome-extension://");
+
     let extractedData = null;
 
-    try {
-      if (typeof chrome !== "undefined" && chrome.tabs && currentTabInfo.tabId) {
-        try {
-          const res = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
-          if (res) extractedData = res;
-        } catch (msgErr) {
-          // If content script is not yet injected into this tab, inject on-the-fly using scripting API
-          if (typeof chrome.scripting !== "undefined" && chrome.scripting.executeScript && currentTabInfo.url && currentTabInfo.url.startsWith("http")) {
-            console.log("[EXTENSION] Dynamically injecting content script into tab:", currentTabInfo.tabId);
-            try {
-              await chrome.scripting.executeScript({
-                target: { tabId: currentTabInfo.tabId },
-                files: ["src/content/content-script.js"]
-              });
-              const retryRes = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
-              if (retryRes) extractedData = retryRes;
-            } catch (injectErr) {
-              console.warn("[EXTENSION] On-the-fly script injection skipped:", injectErr.message);
+    if (!isInternalPage) {
+      try {
+        if (typeof chrome !== "undefined" && chrome.tabs && currentTabInfo.tabId) {
+          try {
+            const res = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
+            if (res) extractedData = res;
+          } catch (msgErr) {
+            // If content script is not yet injected into this tab, inject on-the-fly using scripting API
+            if (typeof chrome.scripting !== "undefined" && chrome.scripting.executeScript && currentTabInfo.url && currentTabInfo.url.startsWith("http")) {
+              console.log("[EXTENSION] Dynamically injecting content script into tab:", currentTabInfo.tabId);
+              try {
+                await chrome.scripting.executeScript({
+                  target: { tabId: currentTabInfo.tabId },
+                  files: ["src/content/content-script.js"]
+                });
+                const retryRes = await chrome.tabs.sendMessage(currentTabInfo.tabId, { action: "EXTRACT_PAGE_CONTEXT" });
+                if (retryRes) extractedData = retryRes;
+              } catch (injectErr) {
+                console.warn("[EXTENSION] On-the-fly script injection skipped:", injectErr.message);
+              }
             }
           }
-        }
 
-        if (extractedData) {
-          currentTabInfo.selectedText = extractedData.selectedText || "";
-          currentTabInfo.bodyText = extractedData.bodyText || "";
-          currentTabInfo.metaDescription = extractedData.metaDescription || "";
-          currentTabInfo.links = extractedData.links || [];
-          currentTabInfo.signals = extractedData.signals || [];
-          console.log("[EXTENSION] Visible text length:", currentTabInfo.bodyText.length);
-          console.log("[EXTENSION] Links detected:", currentTabInfo.links.length);
-          console.log("[EXTENSION] Signals extracted by content script:", currentTabInfo.signals.length);
+          if (extractedData) {
+            currentTabInfo.selectedText = extractedData.selectedText || "";
+            currentTabInfo.bodyText = extractedData.bodyText || "";
+            currentTabInfo.metaDescription = extractedData.metaDescription || "";
+            currentTabInfo.links = extractedData.links || [];
+            currentTabInfo.signals = extractedData.signals || [];
+            console.log("[EXTENSION] Visible text length:", currentTabInfo.bodyText.length);
+            console.log("[EXTENSION] Links detected:", currentTabInfo.links.length);
+            console.log("[EXTENSION] Signals extracted by content script:", currentTabInfo.signals.length);
+          }
         }
+      } catch (err) {
+        console.warn("[EXTENSION] Content script communication fallback handled cleanly:", err);
       }
-    } catch (err) {
-      console.warn("[EXTENSION] Content script communication fallback handled cleanly:", err);
     }
 
     let backendResponse = null;

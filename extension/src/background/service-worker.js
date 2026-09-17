@@ -71,12 +71,20 @@ function triggerSystemNotification(pageTitle, riskCount, pageUrl) {
 
   if (typeof chrome.notifications !== "undefined" && chrome.notifications.create) {
     try {
+      const iconUrl = (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.getURL)
+        ? chrome.runtime.getURL("icons/icon128.png")
+        : "icons/icon128.png";
+
       chrome.notifications.create({
         type: "basic",
-        iconUrl: "icons/icon128.png",
+        iconUrl: iconUrl,
         title: "🛡️ AstraGuard Security Alert",
         message: `⚠ ${riskCount} risk indicators detected on "${pageTitle || 'scanned page'}". Click to investigate.`,
         priority: 2
+      }, () => {
+        if (chrome.runtime.lastError) {
+          console.warn("[EXTENSION] Notification creation handled:", chrome.runtime.lastError.message);
+        }
       });
     } catch (err) {
       console.warn("AstraGuard Notification failed:", err);
@@ -87,9 +95,12 @@ function triggerSystemNotification(pageTitle, riskCount, pageUrl) {
 // Handle System Notification Clicks
 if (typeof chrome.notifications !== "undefined" && chrome.notifications.onClicked) {
   chrome.notifications.onClicked.addListener(() => {
-    if (typeof chrome.action !== "undefined" && chrome.action.openPopup) {
+    if (typeof chrome.action !== "undefined" && typeof chrome.action.openPopup === "function") {
       try {
-        chrome.action.openPopup();
+        const res = chrome.action.openPopup();
+        if (res && typeof res.catch === "function") {
+          res.catch((err) => console.warn("[EXTENSION] openPopup handled:", err.message));
+        }
       } catch (_) {}
     }
   });
@@ -100,20 +111,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const tabId = sender.tab ? sender.tab.id : null;
 
   if (request.action === "GET_CURRENT_TAB_INFO") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs[0]) {
-        sendResponse({ url: tabs[0].url, title: tabs[0].title, tabId: tabs[0].id });
-      } else {
-        sendResponse({ url: "", title: "", tabId: null });
-      }
-    });
+    try {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (chrome.runtime.lastError || !tabs || !tabs[0]) {
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, (fallbackTabs) => {
+            if (chrome.runtime.lastError || !fallbackTabs || !fallbackTabs[0]) {
+              sendResponse({ url: "", title: "", tabId: null });
+            } else {
+              sendResponse({ url: fallbackTabs[0].url, title: fallbackTabs[0].title, tabId: fallbackTabs[0].id });
+            }
+          });
+        } else {
+          sendResponse({ url: tabs[0].url, title: tabs[0].title, tabId: tabs[0].id });
+        }
+      });
+    } catch (_) {
+      sendResponse({ url: "", title: "", tabId: null });
+    }
     return true;
   }
 
   if (request.action === "OPEN_DEMO_TAB") {
     const demoUrl = request.url || `${WEB_WORKSTATION_URL}/demo/threat-simulation`;
     chrome.tabs.create({ url: demoUrl }, (tab) => {
-      sendResponse({ success: true, tabId: tab ? tab.id : null });
+      if (chrome.runtime.lastError) {
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        sendResponse({ success: true, tabId: tab ? tab.id : null });
+      }
     });
     return true;
   }
@@ -134,7 +159,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Attempt automatic popup opening where supported by Chrome version
         if (typeof chrome.action.openPopup === "function") {
           try {
-            chrome.action.openPopup();
+            const res = chrome.action.openPopup();
+            if (res && typeof res.catch === "function") {
+              res.catch(() => {});
+            }
           } catch (_) {}
         }
       } else {
