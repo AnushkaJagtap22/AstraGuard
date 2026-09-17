@@ -39,3 +39,17 @@ def get_evidence_graph(inv_id: str):
         "nodes": data.get("evidence_nodes", []),
         "edges": data.get("evidence_edges", [])
     }
+
+@router.get("/{inv_id}/timeline", response_model=List[Dict[str, Any]])
+def get_investigation_timeline(inv_id: str):
+    data = get_investigation(inv_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+    return data.get("timeline", [])
+
+@router.get("/{inv_id}/evidence", response_model=List[Dict[str, Any]])
+def get_investigation_evidence(inv_id: str):
+    data = get_investigation(inv_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+    return data.get("evidence", data.get("evidence_nodes", []))

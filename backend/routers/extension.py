@@ -25,6 +25,18 @@ class SafetyCheckRequest(BaseModel):
     contentPreview: Optional[str] = None
     visibleText: Optional[str] = None
 
+class UrlInvestigateRequest(BaseModel):
+    url: str
+    title: Optional[str] = None
+
+def is_ssrf_blocked_target(url_str: str) -> bool:
+    """Helper to guard against SSRF attempts targeting private/loopback infrastructure."""
+    if not url_str:
+        return False
+    u_lower = url_str.lower()
+    blocked_patterns = ["127.0.0.1", "localhost", "169.254.169.254", "0.0.0.0", "::1"]
+    return any(p in u_lower for p in blocked_patterns)
+
 @router.post("/check-safety")
 def check_safety(req: SafetyCheckRequest) -> Dict[str, Any]:
     url_lower = (req.url or "").lower()
@@ -183,6 +195,17 @@ def investigate_page(req: PageInvestigateRequest) -> Dict[str, Any]:
         content=req.url if req.url else content
     )
     result["title"] = f"Browser Extension: {req.title or req.url}"
+    result["source"] = "browser_extension"
+    save_investigation(result)
+    return result
+
+@router.post("/investigate-url")
+def investigate_url(req: UrlInvestigateRequest) -> Dict[str, Any]:
+    result = orchestrator.run_investigation(
+        input_type="url",
+        content=req.url
+    )
+    result["title"] = f"Browser Extension URL Check ({req.title or req.url})"
     result["source"] = "browser_extension"
     save_investigation(result)
     return result

@@ -1,7 +1,7 @@
 // AstraGuard Extension Popup Logic — Full Multi-Agent Investigation Pipeline & Logging
 
 let BACKEND_URL = "http://127.0.0.1:8000";
-let ASTRAGUARD_APP_URL = "http://localhost:5176";
+let ASTRAGUARD_APP_URL = "https://astra-guard-phi.vercel.app";
 
 let currentTabInfo = {
   tabId: null,
@@ -23,7 +23,7 @@ let currentTabInfo = {
 let activeCaseId = "AG-CASE-001";
 let settings = {
   backendUrl: "http://127.0.0.1:8000",
-  workstationUrl: "http://localhost:5176",
+  workstationUrl: "https://astra-guard-phi.vercel.app",
   autoScan: true
 };
 
@@ -139,8 +139,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   launchDemoBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const path = btn.getAttribute("data-url") || "/demo/scholarship";
-      const fullUrl = `${ASTRAGUARD_APP_URL}${path}`;
+      const dataUrl = btn.getAttribute("data-url") || "/demo/scholarship";
+      const fullUrl = dataUrl.startsWith("http") ? dataUrl : `${ASTRAGUARD_APP_URL}${dataUrl}`;
       console.log("[DEMO] Launching unique scenario URL:", fullUrl);
 
       demoScenarioModal?.classList.add("hidden");

@@ -217,7 +217,30 @@ AstraGuard uses clean client-side routing:
 * **Backend**: Python 3.10+, FastAPI, Uvicorn, SQLite
 * **AI Orchestration**: Custom Multi-Agent Pipeline (Mistral / OpenAI integration supported)
 * **Browser Extension**: Manifest V3, HTML5, Modular CSS3, ES6 JavaScript
-* **Deployment**: Vercel SPA rewrites (`vercel.json`)
+---
+
+## 🌐 Backend Deployment — Render
+
+AstraGuard's FastAPI backend is configured for simple, production-grade deployment on **Render**:
+
+### Deployment Configuration Summary:
+* **Root Directory**: `backend`
+* **Runtime**: `Python 3`
+* **Build Command**: `pip install -r requirements.txt`
+* **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+* **Health Check Path**: `/health`
+
+### Required Environment Variables on Render:
+| Variable Name | Value / Placeholder | Description |
+| :--- | :--- | :--- |
+| `HOST` | `0.0.0.0` | Binds to all network interfaces |
+| `ENVIRONMENT` | `production` | Production environment flag |
+| `CORS_ORIGINS` | `https://your-app.vercel.app` | Comma-separated allowed frontend domains |
+| `MISTRAL_API_KEY` | `your_mistral_api_key_here` | Optional API key for Mistral LLM model |
+| `OPENAI_API_KEY` | `your_openai_api_key_here` | Optional API key for OpenAI model fallback |
+
+### 1-Click Render Blueprint Deployment:
+A `render.yaml` Infrastructure-as-Code file is provided in the repository. Connect your GitHub repository to Render and click **New → Blueprint** to auto-deploy the service.
 
 ---
 

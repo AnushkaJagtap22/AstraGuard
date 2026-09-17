@@ -2,7 +2,7 @@
 // Real-time AI Web Safety Layer Service Worker
 
 const BACKEND_URL = "http://127.0.0.1:8000";
-const WEB_WORKSTATION_URL = "http://localhost:5176";
+const WEB_WORKSTATION_URL = "https://astra-guard-phi.vercel.app";
 
 // De-duplication cache for notifications to prevent notification spam
 const notifiedUrls = new Set();
